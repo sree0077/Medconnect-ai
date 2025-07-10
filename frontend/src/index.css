@@ -1,0 +1,575 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Prevent transitions during theme initialization to avoid flash */
+.theme-transition-disabled *,
+.theme-transition-disabled *::before,
+.theme-transition-disabled *::after {
+  transition: none !important;
+  animation: none !important;
+}
+
+/* Prevent layout shifts and improve page transitions */
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+/* Optimize rendering performance */
+.page-container {
+  contain: layout style paint;
+  will-change: auto;
+}
+
+/* Smooth transitions for route changes */
+.route-transition-enter {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.route-transition-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 200ms ease-in-out, transform 200ms ease-in-out;
+}
+
+.route-transition-exit {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.route-transition-exit-active {
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: opacity 150ms ease-in-out, transform 150ms ease-in-out;
+}
+
+/* CSS Custom Properties for Color System */
+:root {
+  /* Light Theme - Primary Colors (Purple) */
+  --primary: 147 51 234; /* purple-600 */
+  --primary-50: 250 245 255; /* purple-50 */
+  --primary-100: 243 232 255; /* purple-100 */
+  --primary-200: 233 213 255; /* purple-200 */
+  --primary-300: 216 180 254; /* purple-300 */
+  --primary-400: 196 181 253; /* purple-400 */
+  --primary-500: 168 85 247; /* purple-500 */
+  --primary-600: 147 51 234; /* purple-600 */
+  --primary-700: 126 34 206; /* purple-700 */
+  --primary-800: 107 33 168; /* purple-800 */
+  --primary-900: 88 28 135; /* purple-900 */
+
+  /* Light Theme - Secondary Colors (Blue) */
+  --secondary: 37 99 235; /* blue-600 */
+  --secondary-50: 239 246 255; /* blue-50 */
+  --secondary-100: 219 234 254; /* blue-100 */
+  --secondary-200: 191 219 254; /* blue-200 */
+  --secondary-300: 147 197 253; /* blue-300 */
+  --secondary-400: 96 165 250; /* blue-400 */
+  --secondary-500: 59 130 246; /* blue-500 */
+  --secondary-600: 37 99 235; /* blue-600 */
+  --secondary-700: 29 78 216; /* blue-700 */
+  --secondary-800: 30 64 175; /* blue-800 */
+  --secondary-900: 30 58 138; /* blue-900 */
+
+  /* Light Theme - Background & Surface Colors */
+  --background: 255 255 255; /* white */
+  --surface: 249 250 251; /* gray-50 */
+  --surface-secondary: 243 244 246; /* gray-100 */
+  --border: 229 231 235; /* gray-200 */
+  --text-primary: 17 24 39; /* gray-900 */
+  --text-secondary: 75 85 99; /* gray-600 */
+  --text-muted: 156 163 175; /* gray-400 */
+}
+
+/* Dark Theme Variables */
+[data-theme="dark"] {
+  /* Dark Theme - Primary Colors (Deep Purple Variants for Dark Mode) */
+  --primary: 126 34 206; /* purple-700 - main purple for dark theme */
+  --primary-50: 17 12 20; /* very dark purple-black */
+  --primary-100: 35 25 44; /* dark purple-gray */
+  --primary-200: 53 38 68; /* darker purple */
+  --primary-300: 88 28 135; /* purple-900 */
+  --primary-400: 107 33 168; /* purple-800 */
+  --primary-500: 126 34 206; /* purple-700 */
+  --primary-600: 147 51 234; /* purple-600 */
+  --primary-700: 168 85 247; /* purple-500 */
+  --primary-800: 196 181 253; /* purple-400 */
+  --primary-900: 216 180 254; /* purple-300 */
+
+  /* Dark Theme - Secondary Colors (Deep Blue Variants) */
+  --secondary: 29 78 216; /* blue-700 */
+  --secondary-50: 12 16 23; /* very dark blue-black */
+  --secondary-100: 23 37 84; /* dark blue */
+  --secondary-200: 30 58 138; /* blue-900 */
+  --secondary-300: 30 64 175; /* blue-800 */
+  --secondary-400: 29 78 216; /* blue-700 */
+  --secondary-500: 37 99 235; /* blue-600 */
+  --secondary-600: 59 130 246; /* blue-500 */
+  --secondary-700: 96 165 250; /* blue-400 */
+  --secondary-800: 147 197 253; /* blue-300 */
+  --secondary-900: 191 219 254; /* blue-200 */
+
+  /* Dark Theme - Background & Surface Colors (True Dark Mode) */
+  --background: 15 23 42; /* slate-900 - main dark background */
+  --surface: 30 41 59; /* slate-800 - card/surface background */
+  --surface-secondary: 51 65 85; /* slate-700 - secondary surfaces */
+  --border: 71 85 105; /* slate-600 - visible borders on dark */
+  --text-primary: 248 250 252; /* slate-50 - primary text (light) */
+  --text-secondary: 203 213 225; /* slate-300 - secondary text */
+  --text-muted: 148 163 184; /* slate-400 - muted text */
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Poppins', sans-serif;
+  }
+
+  #root {
+    min-height: 100vh;
+  }
+}
+
+@layer components {
+  /* Button Components */
+  .btn {
+    @apply inline-flex items-center justify-center font-semibold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2;
+  }
+
+  .btn-primary {
+    @apply bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white shadow-lg hover:shadow-2xl focus:ring-primary-500;
+  }
+
+  .btn-secondary {
+    @apply bg-transparent border-2 border-primary-600 text-primary-600 hover:bg-primary-600 hover:text-white focus:ring-primary-500 dark:border-primary-400 dark:text-primary-400 dark:hover:bg-primary-700 dark:hover:text-white;
+  }
+
+  .btn-outline {
+    @apply bg-transparent border-2 border-gray-300 text-gray-700 hover:bg-gray-100 hover:border-gray-400 focus:ring-gray-500 dark:border-border dark:text-text-secondary dark:hover:bg-surface-secondary dark:hover:border-text-muted dark:focus:ring-primary-500;
+  }
+
+  .btn-ghost {
+    @apply bg-transparent text-gray-700 hover:bg-gray-100 focus:ring-gray-500 dark:text-text-secondary dark:hover:bg-surface-secondary dark:focus:ring-primary-500;
+  }
+
+  /* Layout Components */
+  .section-padding {
+    @apply py-20 md:py-32;
+  }
+
+  .container-custom {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  /* Card Components */
+  .card {
+    @apply bg-white rounded-2xl shadow-xl p-8 border border-gray-100 dark:bg-surface dark:border-border dark:shadow-2xl;
+  }
+
+  .card-hover {
+    @apply transition-all duration-500 transform hover:scale-105 hover:shadow-2xl hover:-translate-y-2;
+  }
+
+  .glass-card {
+    @apply bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl dark:bg-surface/10 dark:border-border/20;
+  }
+
+  .glass-card-strong {
+    @apply bg-white/20 backdrop-blur-lg border border-white/30 rounded-2xl shadow-2xl dark:bg-surface/20 dark:border-border/30;
+  }
+
+  /* Text Components */
+  .text-gradient {
+    @apply bg-gradient-to-r from-primary-600 via-primary-700 to-primary-800 bg-clip-text text-transparent;
+  }
+
+  .text-gradient-secondary {
+    @apply bg-gradient-to-r from-secondary-600 via-secondary-700 to-secondary-800 bg-clip-text text-transparent;
+  }
+
+  /* Background Gradients */
+  .medical-gradient {
+    @apply bg-gradient-to-br from-primary-50 via-primary-100 to-primary-200;
+  }
+
+  .hero-gradient {
+    @apply bg-gradient-to-br from-primary-100 via-primary-200 to-secondary-200;
+  }
+
+  .auth-gradient {
+    @apply bg-gradient-to-br from-primary-600 to-secondary-600;
+  }
+
+  /* Animation Classes */
+  .animate-pulse-slow {
+    animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .animate-glow {
+    animation: glow 2s ease-in-out infinite alternate;
+  }
+
+  /* Page Transitions */
+  .page-transition {
+    @apply transition-all duration-500 ease-in-out;
+  }
+
+  .fade-in {
+    @apply opacity-0 animate-pulse;
+    animation: fadeIn 0.6s ease-out forwards;
+  }
+
+  .slide-up {
+    @apply opacity-0 translate-y-8;
+    animation: slideUp 0.6s ease-out forwards;
+  }
+
+  /* Form Styles */
+  .form-label {
+    @apply block text-sm font-medium text-slate-700 dark:text-text-primary mb-2;
+  }
+
+  .form-input {
+    @apply w-full px-4 py-3 border border-gray-300 dark:border-border rounded-xl focus:ring-2 focus:ring-purple-500 dark:focus:ring-primary-500 focus:border-purple-500 dark:focus:border-primary-500 transition-all duration-200 bg-white dark:bg-surface text-slate-900 dark:text-text-primary placeholder-slate-400 dark:placeholder-text-muted;
+  }
+
+  .form-element {
+    @apply opacity-100 transform translate-y-0;
+  }
+
+  /* Checkbox Styles */
+  .checkbox-label {
+    @apply ml-2 text-sm text-slate-700 cursor-pointer;
+  }
+
+  /* Link Styles */
+  .link {
+    @apply text-primary-600 hover:text-primary-700 font-medium transition-colors duration-200 hover:underline;
+  }
+
+  /* Shadow Utilities */
+  .shadow-card {
+    @apply shadow-2xl;
+  }
+
+  .shadow-soft {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+
+  .shadow-glow {
+    box-shadow: 0 0 20px rgba(147, 51, 234, 0.3);
+  }
+
+  /* Color Utility Classes */
+  .bg-primary {
+    @apply bg-primary-600;
+  }
+
+  .bg-secondary {
+    @apply bg-secondary-600;
+  }
+
+  .text-primary {
+    @apply text-primary-600;
+  }
+
+  .text-secondary {
+    @apply text-secondary-600;
+  }
+
+  /* Prevent unwanted zoom effects on mobile */
+  * {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+
+  /* Allow text selection for content */
+  p, span, h1, h2, h3, h4, h5, h6, input, textarea {
+    -webkit-user-select: text;
+    -khtml-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+  }
+}
+
+@layer utilities {
+  /* Animation Delays */
+  .animation-delay-200 {
+    animation-delay: 200ms;
+  }
+
+  .animation-delay-400 {
+    animation-delay: 400ms;
+  }
+
+  .animation-delay-600 {
+    animation-delay: 600ms;
+  }
+
+  .animation-delay-800 {
+    animation-delay: 800ms;
+  }
+
+  .animation-delay-1000 {
+    animation-delay: 1000ms;
+  }
+
+  /* Backdrop Blur Utilities */
+  .backdrop-blur-xs {
+    backdrop-filter: blur(2px);
+  }
+
+  .backdrop-blur-3xl {
+    backdrop-filter: blur(64px);
+  }
+}
+
+/* Keyframes */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+@keyframes glow {
+  0% {
+    box-shadow: 0 0 5px rgba(147, 51, 234, 0.5);
+  }
+  100% {
+    box-shadow: 0 0 20px rgba(147, 51, 234, 0.8);
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(147, 51, 234, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(147, 51, 234, 0.8);
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #0066CC;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #0052A3;
+}
+
+/* Three.js canvas styling */
+#three-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* Auth video background styling */
+.auth-video-bg {
+  filter: brightness(0.8) contrast(1.1) saturate(1.2);
+  transition: filter 0.3s ease;
+  animation: subtle-pulse 8s ease-in-out infinite;
+}
+
+.auth-video-bg:hover {
+  filter: brightness(0.9) contrast(1.2) saturate(1.3);
+}
+
+/* Ensure video covers the container properly - Within card */
+.auth-video-container {
+  min-height: 600px;
+  height: 100%;
+}
+
+/* Ensure card has proper height for video background and no gaps */
+.shadow-card {
+  min-height: 600px;
+  display: flex;
+}
+
+/* Remove any potential gaps in video background */
+.auth-video-bg {
+  margin: 0;
+  padding: 0;
+  border: none;
+  outline: none;
+}
+
+@media (max-width: 768px) {
+  .auth-video-container {
+    min-height: 400px;
+  }
+
+  .shadow-card {
+    min-height: 400px;
+  }
+}
+
+/* Subtle pulse animation for video background */
+@keyframes subtle-pulse {
+  0%, 100% {
+    transform: scale(1);
+    filter: brightness(0.8) contrast(1.1) saturate(1.2);
+  }
+  50% {
+    transform: scale(1.02);
+    filter: brightness(0.85) contrast(1.15) saturate(1.25);
+  }
+}
+
+/* Glass morphism effect for content overlay */
+.auth-content-glass {
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+}
+
+/* Additional utility classes */
+.shadow-soft {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+/* Animation delays */
+.animation-delay-200 {
+  animation-delay: 200ms;
+}
+
+.animation-delay-400 {
+  animation-delay: 400ms;
+}
+
+.animation-delay-600 {
+  animation-delay: 600ms;
+}
+
+/* Glass card styles for appointment booking */
+.glass-card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+  
+.glass-input {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+  
+.glass-input:focus {
+  background: rgba(255, 255, 255, 1);
+  border-color: rgb(var(--primary));
+  box-shadow: 0 0 0 3px rgba(var(--primary), 0.1);
+}
+  
+.purple-gradient {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+}
+  
+.purple-gradient-alt {
+  background: linear-gradient(135deg, rgb(var(--primary)) 0%, #8b5cf6 100%);
+}
+
+/* Print Styles for Prescription */
+@media print {
+  @page {
+    margin: 0.5in;
+    size: A4;
+  }
+  
+  body {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+  
+  .print\:hidden {
+    display: none !important;
+  }
+  
+  .print\:shadow-none {
+    box-shadow: none !important;
+  }
+  
+  .print\:rounded-none {
+    border-radius: 0 !important;
+  }
+  
+  .print\:bg-white {
+    background-color: white !important;
+  }
+}
+
+/* Custom styles for prescription */
+.prescription-letterhead {
+  background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+}

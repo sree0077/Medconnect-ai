@@ -1,0 +1,11 @@
+# Only missing packages - matching your installed versions
+Flask==3.0.0
+Flask-CORS==4.0.0
+python-dotenv==1.0.0
+
+# Your existing packages (no need to reinstall):
+# chromadb==1.0.13 (already installed)
+# google-generativeai==0.8.5 (already installed)
+# pandas==2.3.0 (already installed)
+# sentence-transformers==5.0.0 (already installed)
+# transformers==4.53.0 (already installed)

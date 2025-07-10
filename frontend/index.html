@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MedConnect AI</title>
+
+    <!-- Theme script to prevent flash of wrong theme -->
+    <script>
+      (function() {
+        const THEME_STORAGE_KEY = 'medconnect-theme-preference';
+
+        function getInitialTheme() {
+          const savedTheme = localStorage.getItem(THEME_STORAGE_KEY);
+
+          if (savedTheme && (savedTheme === 'light' || savedTheme === 'dark')) {
+            return savedTheme;
+          }
+
+          // Check system preference
+          const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          return systemPrefersDark ? 'dark' : 'light';
+        }
+
+        const theme = getInitialTheme();
+        const root = document.documentElement;
+
+        // Disable transitions during initial theme application
+        root.classList.add('theme-transition-disabled');
+
+        if (theme === 'dark') {
+          root.setAttribute('data-theme', 'dark');
+          root.classList.add('dark');
+        } else {
+          root.setAttribute('data-theme', 'light');
+          root.classList.remove('dark');
+        }
+
+        // Re-enable transitions after a short delay
+        setTimeout(() => {
+          root.classList.remove('theme-transition-disabled');
+        }, 100);
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
