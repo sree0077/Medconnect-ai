@@ -35,7 +35,7 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({
       case 'error':
         return <AlertTriangle className="w-4 h-4 text-red-500" />;
       default:
-        return <Info className="w-4 h-4 text-blue-500" />;
+        return <Info className="w-4 h-4 text-purple-500" />;
     }
   };
 
@@ -48,7 +48,7 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({
       case 'error':
         return 'bg-red-50 border-red-200';
       default:
-        return 'bg-blue-50 border-blue-200';
+        return 'bg-purple-50 border-purple-200';
     }
   };
 
@@ -56,7 +56,7 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({
     <div className="relative">
       {/* Notification Bell */}
       <button
-        className="text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-full p-1 relative"
+        className="text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 rounded-full p-1 relative"
         onClick={() => setIsOpen(!isOpen)}
       >
         <Bell className="h-6 w-6" />
@@ -68,10 +68,10 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({
       {/* Notification Dropdown */}
       {isOpen && (
         <div className="absolute right-0 mt-2 w-80 bg-white rounded-md shadow-lg overflow-hidden z-50">
-          <div className="py-2 px-3 bg-blue-600 text-white font-medium flex justify-between items-center">
+          <div className="py-2 px-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-medium flex justify-between items-center">
             <span>Notifications</span>
             {unreadCount > 0 && (
-              <span className="text-xs bg-white text-blue-600 rounded-full px-2 py-1">
+              <span className="text-xs bg-white text-purple-600 rounded-full px-2 py-1">
                 {unreadCount} new
               </span>
             )}
@@ -83,7 +83,7 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({
                 {notifications.map((notification) => (
                   <div
                     key={notification.id}
-                    className={`px-4 py-3 hover:bg-gray-50 ${!notification.read ? 'bg-blue-50' : ''}`}
+                    className={`px-4 py-3 hover:bg-gray-50 ${!notification.read ? 'bg-purple-50' : ''}`}
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
@@ -96,7 +96,7 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({
                           {notification.timestamp.toLocaleString()}
                         </p>
                         {!notification.read && (
-                          <span className="inline-block mt-1 text-xs font-medium text-blue-600">New</span>
+                          <span className="inline-block mt-1 text-xs font-medium text-purple-600">New</span>
                         )}
                       </div>
                       <div className="flex flex-col gap-1 ml-2">
@@ -109,7 +109,7 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({
                         {!notification.read && (
                           <button
                             onClick={() => onMarkAsRead(notification.id)}
-                            className="text-xs text-blue-600 hover:text-blue-700"
+                            className="text-xs text-purple-600 hover:text-purple-700"
                           >
                             ✓
                           </button>
@@ -131,7 +131,7 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({
               {unreadCount > 0 && (
                 <button
                   onClick={onMarkAllAsRead}
-                  className="text-sm font-medium text-blue-600 hover:text-blue-700"
+                  className="text-sm font-medium text-purple-600 hover:text-purple-700"
                 >
                   Mark all as read
                 </button>
