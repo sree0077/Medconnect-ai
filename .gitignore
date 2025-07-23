@@ -149,10 +149,10 @@ ai-service/package-lock.json
 # Large media files in frontend public folder
 # Video files over 60MB
 frontend/public/neural.mp4
-#frontend/public/DNA.mp4
+frontend/public/DNA.mp4
 
 # General large media file patterns (>60MB)
-#frontend/public/*.mp4
+frontend/public/*.mp4
 frontend/public/*.avi
 frontend/public/*.mov
 frontend/public/*.mkv
@@ -186,7 +186,7 @@ frontend/public/*.ppt
 frontend/public/*.pptx
 
 # Any large files in public assets
-#frontend/public/assets/*.mp4
+frontend/public/assets/*.mp4
 frontend/public/assets/*.avi
 frontend/public/assets/*.mov
 frontend/public/videos/

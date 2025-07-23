@@ -72,7 +72,7 @@ const ProfessionalPrescription: React.FC = () => {
   if (!prescription) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p>No prescription data found. <button onClick={handleBack} className="text-blue-600 underline">Go back</button></p>
+        <p>No prescription data found. <button onClick={handleBack} className="text-purple-600 underline">Go back</button></p>
       </div>
     );
   }
@@ -92,7 +92,7 @@ const ProfessionalPrescription: React.FC = () => {
           
           <button
             onClick={handleDownload}
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors duration-200 shadow-lg hover:shadow-xl"
+            className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg transition-colors duration-200 shadow-lg hover:shadow-xl"
           >
             <Download size={20} />
             Download Prescription
@@ -102,16 +102,16 @@ const ProfessionalPrescription: React.FC = () => {
         {/* Prescription Document */}
         <div className="bg-white shadow-2xl rounded-lg overflow-hidden print:shadow-none print:rounded-none">
           {/* Header */}
-          <div className="prescription-letterhead bg-gradient-to-r from-blue-600 to-blue-800 text-white p-6">
+          <div className="prescription-letterhead bg-gradient-to-r from-purple-600 to-pink-600 text-white p-6">
             <div className="flex items-center justify-between">
               <div>
                 <h1 className="text-2xl font-bold">MEDCONNECT-AI</h1>
-                <p className="text-blue-100 mt-1">Excellence in Healthcare</p>
+                <p className="text-purple-100 mt-1">Excellence in Healthcare</p>
               </div>
               <div className="text-right">
-                <p className="text-sm text-blue-100">Phone: +1 (555) 123-4567</p>
-                <p className="text-sm text-blue-100">Email: info@medconnect-ai.com</p>
-                <p className="text-sm text-blue-100">123 Health Street, Medical City</p>
+                <p className="text-sm text-purple-100">Phone: +1 (555) 123-4567</p>
+                <p className="text-sm text-purple-100">Email: info@medconnect-ai.com</p>
+                <p className="text-sm text-purple-100">123 Health Street, Medical City</p>
               </div>
             </div>
           </div>
@@ -149,10 +149,10 @@ const ProfessionalPrescription: React.FC = () => {
             {/* Diagnosis Section */}
             <div className="mb-8">
               <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center">
-                <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm mr-2">Rx</span>
+                <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded text-sm mr-2">Rx</span>
                 Diagnosis
               </h3>
-              <div className="bg-gray-50 p-4 rounded-lg border-l-4 border-blue-500">
+              <div className="bg-gray-50 p-4 rounded-lg border-l-4 border-purple-500">
                 <p className="text-gray-800 font-medium">{prescription.diagnosis}</p>
               </div>
             </div>

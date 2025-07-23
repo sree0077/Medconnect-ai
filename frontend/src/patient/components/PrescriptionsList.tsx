@@ -14,9 +14,9 @@ const PrescriptionsList: React.FC<PrescriptionsListProps> = ({ prescriptions }) 
     <div className="mb-8">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-semibold text-gray-800">Latest Prescriptions</h2>
-        <Link 
-          to="/prescriptions" 
-          className="text-sm text-blue-600 hover:text-blue-800 flex items-center"
+        <Link
+          to="/prescriptions"
+          className="text-sm text-purple-600 hover:text-purple-800 flex items-center"
         >
           View all <ChevronRight className="h-4 w-4 ml-1" />
         </Link>

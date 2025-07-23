@@ -234,8 +234,8 @@ export default function ViewPrescriptions() {
                           <p className="text-sm text-gray-700">{prescription.diagnosis}</p>
                         </div>
                         
-                        <div className="p-3 bg-blue-50 rounded-lg border border-blue-100">
-                          <h4 className="font-medium text-blue-800 mb-2 flex items-center text-sm">
+                        <div className="p-3 bg-purple-50 rounded-lg border border-purple-100">
+                          <h4 className="font-medium text-purple-800 mb-2 flex items-center text-sm">
                             <Pill size={14} className="mr-2" />
                             Medicines
                           </h4>
