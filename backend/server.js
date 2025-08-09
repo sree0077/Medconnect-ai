@@ -15,6 +15,7 @@ const adminAppointmentRoutes = require("./admin/routes/adminAppointmentRoutes");
 const adminPrescriptionRoutes = require("./admin/routes/adminPrescriptionRoutes");
 const securityLogRoutes = require("./admin/routes/securityLogRoutes");
 const aiAnalyticsRoutes = require("./admin/routes/aiAnalyticsRoutes");
+const systemSettingsRoutes = require("./admin/routes/systemSettingsRoutes");
 
 // Doctor routes
 const doctorDashboardRoutes = require("./doctor/routes/doctorDashboardRoutes");
@@ -64,6 +65,7 @@ app.use("/api/appointments", adminAppointmentRoutes);
 app.use("/api/prescriptions", adminPrescriptionRoutes);
 app.use("/api/security-logs", securityLogRoutes);
 app.use("/api/admin/ai-analytics", aiAnalyticsRoutes);
+app.use("/api/admin/settings", systemSettingsRoutes);
 
 // Mount doctor routes
 app.use("/api/doctor", doctorDashboardRoutes);

@@ -225,57 +225,63 @@ export const settingsService = {
   // Get system settings
   async getSystemSettings(): Promise<SystemSettings> {
     try {
-      // Try to get settings from local storage
-      const storedSettings = localStorage.getItem('systemSettings');
-      if (storedSettings) {
-        return JSON.parse(storedSettings);
-      }
-      
-      // If no stored settings, return defaults
-      return defaultSettings;
+      const response = await api.get('/api/admin/settings');
+      return response.data;
     } catch (error) {
       console.error('Error fetching settings:', error);
+      // Return default settings if API call fails
       return defaultSettings;
     }
   },
-  
+
   // Save system settings
   async saveSystemSettings(settingsData: SystemSettings) {
     try {
-      // Save settings to local storage
-      localStorage.setItem('systemSettings', JSON.stringify(settingsData));
-      
-      // Simulate API response
-      return {
-        success: true,
-        message: 'Settings saved successfully'
-      };
+      const response = await api.put('/api/admin/settings', settingsData);
+      return response.data;
     } catch (error) {
       console.error('Error saving settings:', error);
-      return {
-        success: false,
-        message: 'Failed to save settings'
-      };
+
+      // Handle different error types
+      if (error.response?.status === 403) {
+        return {
+          success: false,
+          message: 'Access denied. Admin privileges required.'
+        };
+      } else if (error.response?.status === 400) {
+        return {
+          success: false,
+          message: error.response.data.message || 'Invalid settings data'
+        };
+      } else {
+        return {
+          success: false,
+          message: 'Failed to save settings. Please try again.'
+        };
+      }
     }
   },
-  
+
   // Reset settings to default
   async resetSystemSettings() {
     try {
-      // Remove any stored settings and reset to defaults
-      localStorage.removeItem('systemSettings');
-      
-      // Simulate API response
-      return {
-        success: true,
-        message: 'Settings reset to default values'
-      };
+      const response = await api.delete('/api/admin/settings');
+      return response.data;
     } catch (error) {
       console.error('Error resetting settings:', error);
-      return {
-        success: false,
-        message: 'Failed to reset settings'
-      };
+
+      // Handle different error types
+      if (error.response?.status === 403) {
+        return {
+          success: false,
+          message: 'Access denied. Admin privileges required.'
+        };
+      } else {
+        return {
+          success: false,
+          message: 'Failed to reset settings. Please try again.'
+        };
+      }
     }
   }
 };
@@ -324,9 +330,39 @@ export const securityLogService = {
   },
 
   // Send "Security Issue Solved" notification to all users
-  async sendSecuritySolvedNotification() {
-    const response = await api.post('/api/security-logs/solved', {});
+  async sendSecurityIssueSolved(message?: string) {
+    const response = await api.post('/api/security-logs/issue-solved', { message });
     return response.data;
+  },
+
+  // Export security logs to CSV
+  async exportLogs() {
+    try {
+      const response = await api.get('/api/security-logs/export', {
+        responseType: 'blob'
+      });
+
+      // Create blob link to download
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+
+      // Generate filename with current date
+      const now = new Date();
+      const dateStr = now.toISOString().split('T')[0];
+      link.setAttribute('download', `security-logs-${dateStr}.csv`);
+
+      // Trigger download
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+
+      return { success: true, message: 'Security logs exported successfully' };
+    } catch (error) {
+      console.error('Error exporting security logs:', error);
+      throw new Error('Failed to export security logs');
+    }
   }
 };
 

@@ -10,7 +10,8 @@ const {
   getSecurityStats,
   sendSecurityAlert,
   resolveSecurityAlert,
-  sendSecurityIssueSolved
+  sendSecurityIssueSolved,
+  exportSecurityLogs
 } = require('../controllers/securityLogController');
 
 // All security log routes require admin role
@@ -39,6 +40,9 @@ router.post('/resolve/:alertId', resolveSecurityAlert);
 
 // Send "Security Issue Solved" notification to all users
 router.post('/issue-solved', authenticateToken, allowRoles('admin'), sendSecurityIssueSolved);
+
+// Export security logs to CSV
+router.get('/export', authenticateToken, allowRoles('admin'), exportSecurityLogs);
 
 // Clear all security logs (for testing)
 router.delete('/clear-all', async (req, res) => {

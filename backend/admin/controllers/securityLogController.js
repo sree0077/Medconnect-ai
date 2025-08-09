@@ -361,6 +361,42 @@ const sendSecurityIssueSolved = async (req, res) => {
   }
 };
 
+// Export security logs to CSV
+const exportSecurityLogs = async (req, res) => {
+  try {
+    const logs = await SecurityLog.find().sort({ timestamp: -1 });
+
+    // Create CSV header
+    const csvHeader = 'Timestamp,Event,User,IP Address,Location,Severity,Details,Status\n';
+
+    // Convert logs to CSV format
+    const csvData = logs.map(log => {
+      const timestamp = new Date(log.timestamp).toISOString();
+      const event = `"${log.event.replace(/"/g, '""')}"`;
+      const user = `"${log.user.replace(/"/g, '""')}"`;
+      const ip = log.ip;
+      const location = `"${log.location.replace(/"/g, '""')}"`;
+      const severity = log.severity;
+      const details = `"${log.details.replace(/"/g, '""')}"`;
+      const status = log.isActive ? 'Active Alert' : 'Resolved';
+
+      return `${timestamp},${event},${user},${ip},${location},${severity},${details},${status}`;
+    }).join('\n');
+
+    const csvContent = csvHeader + csvData;
+
+    // Set headers for file download
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', 'attachment; filename="security-logs.csv"');
+    res.setHeader('Content-Length', Buffer.byteLength(csvContent));
+
+    res.send(csvContent);
+  } catch (error) {
+    console.error('Error exporting security logs:', error);
+    res.status(500).json({ message: 'Error exporting security logs', error: error.message });
+  }
+};
+
 module.exports = {
   getAllSecurityLogs,
   getSecurityLogsBySeverity,
@@ -369,5 +405,6 @@ module.exports = {
   getSecurityStats,
   sendSecurityAlert,
   resolveSecurityAlert,
-  sendSecurityIssueSolved
+  sendSecurityIssueSolved,
+  exportSecurityLogs
 };
