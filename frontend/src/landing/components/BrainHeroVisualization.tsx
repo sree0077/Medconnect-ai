@@ -428,17 +428,17 @@ const Brain: React.FC = () => {
       brain.scene.traverse((child) => {
         if ((child as THREE.Mesh).isMesh) {
           const mesh = child as THREE.Mesh;
-          // Matte black brain material with enhanced contrast for structure visibility
+          // Medical-grade brain material using darker purple-blue theme
           mesh.material = new THREE.MeshStandardMaterial({
-            color: new THREE.Color(0.0, 0.0, 0.0), // Pure black base color
-            metalness: 0.0, // No metalness for matte finish
-            roughness: 1.0, // Maximum roughness for completely matte surface
-            emissive: new THREE.Color(0.0, 0.0, 0.0), // No emissive glow to maintain pure black
-            // Enhanced properties for maximum contrast with matte finish
+            color: new THREE.Color(0.067, 0.078, 0.267), // Much darker purple-blue: rgb(17, 20, 68)
+            metalness: 0.0, // No metalness for matte medical finish
+            roughness: 0.85, // Slightly higher roughness for darker matte surface
+            emissive: new THREE.Color(0.039, 0.012, 0.078), // Darker purple emissive: rgb(10, 3, 20)
+            // Enhanced properties for medical-grade appearance
             transparent: false,
             opacity: 1.0,
             side: THREE.FrontSide,
-            flatShading: false, // Smooth shading to capture detailed highlights
+            flatShading: false, // Smooth shading for anatomical detail
             // Matte surface properties
             envMapIntensity: 0.0, // No environment reflections for matte finish
           });
@@ -511,13 +511,13 @@ const BrainCanvas: React.FC = () => {
       }}
     >
       <Suspense fallback={null}>
-        {/* Dramatic lighting setup for black brain with bright white highlights */}
-        <ambientLight intensity={0.2} color="#ffffff" />
+        {/* Enhanced lighting setup for darker brain with strong contrast */}
+        <ambientLight intensity={0.25} color="#f8fafc" />
 
-        {/* Primary high-intensity directional light for dramatic white highlights */}
+        {/* Primary high-intensity directional light for dramatic contrast */}
         <directionalLight
           position={[12, 12, 8]}
-          intensity={3.0}
+          intensity={3.2}
           color="#ffffff"
           castShadow={!isMobile}
           shadow-mapSize-width={isMobile ? 1024 : 4096}
@@ -530,41 +530,41 @@ const BrainCanvas: React.FC = () => {
           shadow-bias={-0.0001}
         />
 
-        {/* Secondary strong directional light for surface detail illumination */}
+        {/* Secondary directional light with increased intensity for darker surface */}
         <directionalLight
           position={[-10, 8, 10]}
           intensity={2.2}
-          color="#ffffff"
+          color="#e0f2fe"
           castShadow={false}
         />
 
-        {/* Rim lighting for dramatic edge definition */}
+        {/* Stronger rim lighting for anatomical edge definition */}
         <directionalLight
           position={[0, -12, -8]}
-          intensity={1.8}
+          intensity={2.0}
           color="#ffffff"
           castShadow={false}
         />
 
-        {/* Additional rim light from opposite side */}
+        {/* Additional rim light with increased intensity */}
         <directionalLight
           position={[8, -8, 12]}
-          intensity={1.5}
-          color="#ffffff"
+          intensity={1.6}
+          color="#faf5ff"
           castShadow={false}
         />
 
-        {/* High-intensity point lights for localized bright highlights */}
-        <pointLight position={[8, 8, 8]} intensity={1.2} color="#ffffff" />
-        <pointLight position={[-8, -8, 8]} intensity={1.0} color="#ffffff" />
-        <pointLight position={[0, 12, 0]} intensity={0.8} color="#ffffff" />
+        {/* Stronger point lights for localized highlights on dark surface */}
+        <pointLight position={[8, 8, 8]} intensity={1.3} color="#ffffff" />
+        <pointLight position={[-8, -8, 8]} intensity={1.1} color="#e0f2fe" />
+        <pointLight position={[0, 12, 0]} intensity={0.9} color="#faf5ff" />
 
-        {/* Spot lights for focused dramatic lighting */}
+        {/* Enhanced spot lights for focused dramatic lighting */}
         <spotLight
           position={[15, 15, 10]}
           angle={0.3}
           penumbra={0.5}
-          intensity={2.5}
+          intensity={2.8}
           color="#ffffff"
           castShadow={!isMobile}
           shadow-mapSize-width={isMobile ? 512 : 2048}
@@ -575,15 +575,15 @@ const BrainCanvas: React.FC = () => {
           position={[-15, 10, 15]}
           angle={0.4}
           penumbra={0.6}
-          intensity={2.0}
-          color="#ffffff"
+          intensity={2.2}
+          color="#f0f9ff"
           castShadow={false}
         />
 
-        {/* Hemisphere light with high contrast for structure definition */}
+        {/* Hemisphere light with stronger contrast for dark brain */}
         <hemisphereLight
           skyColor="#ffffff"
-          groundColor="#333333"
+          groundColor="#0f172a"
           intensity={0.6}
         />
 
