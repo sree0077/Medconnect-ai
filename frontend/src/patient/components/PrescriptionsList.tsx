@@ -22,10 +22,10 @@ const PrescriptionsList: React.FC<PrescriptionsListProps> = ({ prescriptions }) 
         </Link>
       </div>
       
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden min-h-[200px] flex flex-col">
         {prescriptions.length > 0 ? (
           <div className="divide-y divide-gray-200">
-            {prescriptions.map((prescription) => {
+            {prescriptions.slice(0, 2).map((prescription) => {
               const doctor = prescription.doctorId as User;
               
               // Safely format the date with error handling
@@ -43,43 +43,44 @@ const PrescriptionsList: React.FC<PrescriptionsListProps> = ({ prescriptions }) 
                 : '';
               
               return (
-                <div key={prescription._id} className="p-4 hover:bg-gray-50 transition-colors duration-150">
+                <div key={prescription._id} className="p-3 hover:bg-gray-50 transition-colors duration-150">
                   <div className="flex items-start justify-between">
                     <div className="flex">
                       <div className="bg-purple-100 rounded-lg p-2 mr-3">
-                        <FileText className="h-5 w-5 text-purple-600" />
+                        <FileText className="h-4 w-4 text-purple-600" />
                       </div>
                       <div>
-                        <h3 className="font-medium text-gray-900">{medicinesString}</h3>
-                        <p className="text-sm text-gray-500">
-                          {prescription.diagnosis}
+                        <h3 className="font-medium text-gray-900 text-sm">{medicinesString || 'Prescription'}</h3>
+                        <p className="text-xs text-gray-500">
+                          Dr. {doctor?.name || 'Unknown'} • {formattedDate}
                         </p>
-                        <div className="flex items-center mt-1 text-xs text-gray-500">
-                          <Calendar className="h-3 w-3 mr-1" />
-                          Prescribed on {formattedDate}
-                        </div>
                       </div>
                     </div>
-                    
+
                     <button
-                      className="text-purple-600 hover:text-purple-800 flex items-center text-sm font-medium"
+                      className="text-purple-600 hover:text-purple-800 flex items-center text-xs font-medium"
                       onClick={(e) => e.preventDefault()}
                     >
-                      <Download className="h-4 w-4 mr-1" />
+                      <Download className="h-3 w-3 mr-1" />
                       PDF
                     </button>
-                  </div>
-                  
-                  <div className="mt-3 text-sm">
-                    <p className="text-gray-600">{prescription.advice || 'No specific advice provided.'}</p>
-                    <p className="mt-1 text-gray-500">Dr. {doctor?.name || 'Unknown'}</p>
                   </div>
                 </div>
               );
             })}
+            {prescriptions.length > 2 && (
+              <div className="p-3 text-center bg-gray-50">
+                <Link
+                  to="/prescriptions"
+                  className="text-sm text-purple-600 hover:text-purple-800 font-medium"
+                >
+                  View {prescriptions.length - 2} more prescriptions
+                </Link>
+              </div>
+            )}
           </div>
         ) : (
-          <div className="p-6 text-center">
+          <div className="p-4 text-center flex-1 flex flex-col justify-center">
             <p className="text-gray-500">No prescriptions found</p>
           </div>
         )}

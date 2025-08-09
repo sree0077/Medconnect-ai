@@ -118,9 +118,18 @@ const Dashboard: React.FC = () => {
   const transformPrescriptions = (prescriptions: any[]): Prescription[] => {
     return prescriptions.map(presc => ({
       id: presc._id,
-      medication: presc.medicines?.[0]?.name || 'Unknown Medication',
-      dosage: presc.medicines?.[0]?.dosage || 'As prescribed',
-      frequency: presc.medicines?.[0]?.timing || 'As directed',
+      _id: presc._id,
+      patientId: presc.patientId,
+      doctorId: presc.doctorId,
+      diagnosis: presc.diagnosis || 'No diagnosis provided',
+      medicines: presc.medicines || [],
+      advice: presc.advice,
+      createdAt: presc.createdAt,
+      updatedAt: presc.updatedAt,
+      // Legacy fields for compatibility with existing components
+      medication: presc.medicines?.[0] || 'Unknown Medication',
+      dosage: 'As prescribed',
+      frequency: 'As directed',
       instructions: presc.advice || 'Follow doctor\'s instructions',
       prescribedBy: presc.doctorId?.name || 'Unknown Doctor',
       prescribedDate: new Date(presc.createdAt).toLocaleDateString('en-US', {
@@ -177,6 +186,70 @@ const Dashboard: React.FC = () => {
   const upcomingAppointments = transformAppointments(dashboardData.upcomingAppointments || []);
   const transformedPrescriptions = transformPrescriptions(prescriptions);
 
+  // Calculate dynamic stats
+  const getAppointmentChangeText = () => {
+    const thisWeekAppointments = upcomingAppointments.filter(apt => {
+      const aptDate = new Date(apt.date);
+      const today = new Date();
+      const weekFromNow = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
+      return aptDate >= today && aptDate <= weekFromNow;
+    }).length;
+
+    if (thisWeekAppointments === 0) return "No appointments this week";
+    return `${thisWeekAppointments} this week`;
+  };
+
+  const getPrescriptionChangeText = () => {
+    const activePrescriptions = transformedPrescriptions.length;
+    if (activePrescriptions === 0) return "No active prescriptions";
+    if (activePrescriptions === 1) return "1 active prescription";
+    return `${activePrescriptions} active prescriptions`;
+  };
+
+  const getLatestPrescriptionInfo = () => {
+    if (transformedPrescriptions.length === 0) {
+      return { value: "No prescriptions", change: "Visit a doctor to get started" };
+    }
+
+    // Sort by creation date to get the latest
+    const sortedPrescriptions = [...transformedPrescriptions].sort((a, b) =>
+      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+
+    const latest = sortedPrescriptions[0];
+    const prescribedDate = new Date(latest.createdAt);
+    const today = new Date();
+    const daysDiff = Math.floor((today.getTime() - prescribedDate.getTime()) / (1000 * 60 * 60 * 24));
+
+    let timeText;
+    if (daysDiff === 0) timeText = "Today";
+    else if (daysDiff === 1) timeText = "Yesterday";
+    else if (daysDiff < 7) timeText = `${daysDiff} days ago`;
+    else if (daysDiff < 30) timeText = `${Math.floor(daysDiff / 7)} weeks ago`;
+    else timeText = `${Math.floor(daysDiff / 30)} months ago`;
+
+    // Show a more appropriate value for the card layout
+    const medicineCount = latest.medicines && latest.medicines.length > 0
+      ? latest.medicines.length
+      : 0;
+
+    let displayValue;
+    if (medicineCount === 0) {
+      displayValue = "No medicines";
+    } else if (medicineCount === 1) {
+      displayValue = "1 medicine";
+    } else {
+      displayValue = `${medicineCount} medicines`;
+    }
+
+    return {
+      value: displayValue,
+      change: `Prescribed ${timeText}`
+    };
+  };
+
+  const latestPrescriptionInfo = getLatestPrescriptionInfo();
+
   return (
     <PatientLayout>
       <div className="space-y-6">
@@ -193,31 +266,31 @@ const Dashboard: React.FC = () => {
           <PatientStatCard
             title="Upcoming Appointments"
             value={upcomingAppointments.length}
-            change="+2 this week"
-            changeType="increase"
+            change={getAppointmentChangeText()}
+            changeType={upcomingAppointments.length > 0 ? "increase" : "neutral"}
             icon={Calendar}
             iconColor="text-purple-600"
           />
           <PatientStatCard
             title="Active Prescriptions"
             value={transformedPrescriptions.length}
-            change="3 active"
+            change={getPrescriptionChangeText()}
             changeType="neutral"
             icon={FileText}
             iconColor="text-green-600"
           />
           <PatientStatCard
-            title="Health Score"
-            value="85%"
-            change="+5% improvement"
-            changeType="increase"
+            title="Latest Prescription"
+            value={latestPrescriptionInfo.value}
+            change={latestPrescriptionInfo.change}
+            changeType="neutral"
             icon={Activity}
             iconColor="text-blue-600"
           />
           <PatientStatCard
-            title="Last Checkup"
-            value="2 weeks ago"
-            change="Next due in 4 weeks"
+            title="Total Appointments"
+            value={dashboardData.appointments?.length || 0}
+            change={`${dashboardData.pastAppointments?.length || 0} completed`}
             changeType="neutral"
             icon={Clock}
             iconColor="text-purple-600"

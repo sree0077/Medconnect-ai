@@ -106,6 +106,7 @@ app.listen(PORT, () => {
   console.log("- GET /api/appointments/patient");
   console.log("- GET /api/appointments/doctor");
   console.log("- PUT /api/appointments/update-status/:id");
+  console.log("- PUT /api/appointments/cancel/:id");
   console.log("- POST /api/prescriptions/add");
   console.log("- GET /api/prescriptions/patient");
   console.log("- GET /api/prescriptions/doctor");

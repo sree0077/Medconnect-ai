@@ -3,6 +3,7 @@ const { authenticateToken } = require('../../common/middleware/auth');
 const allowRoles = require('../../common/middleware/role');
 const User = require('../../common/models/User');
 const Appointment = require('../../common/models/Appointment');
+const { autoExpirePendingAppointments } = require('../../common/controllers/appointmentController');
 
 const router = express.Router();
 
@@ -19,6 +20,9 @@ router.get('/dashboard', authenticateToken, allowRoles('patient'), async (req, r
       return res.status(404).json({ message: 'User not found' });
     }
     console.log('Found user:', user.name);
+
+    // Auto-expire pending appointments before fetching
+    await autoExpirePendingAppointments();
 
     const appointments = await Appointment.find({ patientId: userId })
       .populate('doctorId', 'name')

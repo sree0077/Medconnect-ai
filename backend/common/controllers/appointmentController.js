@@ -2,6 +2,77 @@ const Appointment = require("../models/Appointment");
 const User = require("../models/User");
 const { createAppointmentNotification, createNotification } = require('./notificationController');
 
+// Utility function to auto-expire pending appointments
+const autoExpirePendingAppointments = async () => {
+  try {
+    const now = new Date();
+
+    // Find all pending appointments
+    const pendingAppointments = await Appointment.find({ status: 'pending' });
+
+    const expiredAppointments = [];
+
+    for (const appointment of pendingAppointments) {
+      // Parse appointment date and time
+      const appointmentDate = new Date(appointment.date);
+      const [hours, minutes] = appointment.time.split(':').map(Number);
+
+      // Set the appointment datetime
+      appointmentDate.setHours(hours, minutes, 0, 0);
+
+      // Add 2-hour grace period
+      const gracePeriodEnd = new Date(appointmentDate.getTime() + (2 * 60 * 60 * 1000));
+
+      // Check if grace period has passed
+      if (now > gracePeriodEnd) {
+        expiredAppointments.push(appointment._id);
+      }
+    }
+
+    // Update expired appointments to 'rejected' status
+    if (expiredAppointments.length > 0) {
+      await Appointment.updateMany(
+        { _id: { $in: expiredAppointments } },
+        { status: 'rejected' }
+      );
+
+      console.log(`Auto-expired ${expiredAppointments.length} pending appointments`);
+
+      // Create notifications for expired appointments
+      for (const appointmentId of expiredAppointments) {
+        try {
+          const appointment = await Appointment.findById(appointmentId)
+            .populate('patientId', 'name')
+            .populate('doctorId', 'name');
+
+          if (appointment) {
+            // Notify patient
+            await createNotification(
+              appointment.patientId._id,
+              'Appointment Auto-Expired',
+              `Your appointment with Dr. ${appointment.doctorId.name} on ${appointment.date} at ${appointment.time} has been automatically cancelled due to no response from the doctor.`,
+              'appointment',
+              {
+                doctorName: appointment.doctorId.name,
+                appointmentDate: appointment.date,
+                appointmentTime: appointment.time,
+                status: 'auto-expired'
+              }
+            );
+          }
+        } catch (notificationError) {
+          console.error('Error creating auto-expiry notification:', notificationError);
+        }
+      }
+    }
+
+    return expiredAppointments.length;
+  } catch (error) {
+    console.error('Error in autoExpirePendingAppointments:', error);
+    return 0;
+  }
+};
+
 const bookAppointment = async (req, res) => {
   const { doctorId, date, time, type = 'consultation' } = req.body;
   const patientId = req.user._id; // Using _id from authenticated user
@@ -74,6 +145,9 @@ const bookAppointment = async (req, res) => {
 
 const getPatientAppointments = async (req, res) => {
   try {
+    // Auto-expire pending appointments before fetching
+    await autoExpirePendingAppointments();
+
     const appointments = await Appointment.find({ patientId: req.user._id })
       .populate('doctorId', 'name email')
       .populate('patientId', 'name email')
@@ -87,6 +161,9 @@ const getPatientAppointments = async (req, res) => {
 
 const getDoctorAppointments = async (req, res) => {
   try {
+    // Auto-expire pending appointments before fetching
+    await autoExpirePendingAppointments();
+
     const appointments = await Appointment.find({ doctorId: req.user._id })
       .populate('doctorId', 'name email')
       .populate('patientId', 'name email')
@@ -211,10 +288,70 @@ const getAllAppointments = async (req, res) => {
   }
 };
 
+// Patient cancellation function
+const cancelPatientAppointment = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    // Verify the appointment belongs to this patient and is in pending status
+    const appointment = await Appointment.findOne({
+      _id: id,
+      patientId: req.user._id,
+      status: 'pending' // Only allow cancellation of pending appointments
+    });
+
+    if (!appointment) {
+      return res.status(404).json({ error: "Appointment not found or cannot be cancelled" });
+    }
+
+    // Update appointment status to cancelled
+    const updated = await Appointment.findByIdAndUpdate(
+      id,
+      { status: 'cancelled' },
+      { new: true }
+    ).populate('doctorId', 'name email')
+     .populate('patientId', 'name email');
+
+    // Send notification to doctor about patient cancellation
+    try {
+      const doctorId = updated.doctorId._id;
+      const patientName = updated.patientId.name;
+      const appointmentDate = updated.date;
+      const appointmentTime = updated.time;
+
+      await createNotification(
+        doctorId,
+        'Appointment Cancelled by Patient',
+        `${patientName} has cancelled their appointment scheduled for ${appointmentDate} at ${appointmentTime}`,
+        'appointment',
+        {
+          patientName,
+          appointmentDate,
+          appointmentTime,
+          status: 'cancelled'
+        }
+      );
+    } catch (notificationError) {
+      console.error('Error creating cancellation notification:', notificationError);
+      // Don't fail the cancellation if notification fails
+    }
+
+    res.json({
+      message: "Appointment cancelled successfully",
+      appointment: updated
+    });
+  } catch (err) {
+    console.error("Cancellation error:", err);
+    res.status(500).json({ error: "Failed to cancel appointment" });
+  }
+};
+
 module.exports = {
   bookAppointment,
   getPatientAppointments,
   getDoctorAppointments,
   updateAppointmentStatus,
-  getAllAppointments
+  getAllAppointments,
+  autoExpirePendingAppointments,
+  cancelPatientAppointment
 };

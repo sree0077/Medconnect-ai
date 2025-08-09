@@ -5,6 +5,7 @@ import { Calendar, Clock, User, Filter, PlusCircle, Search } from 'lucide-react'
 import { Appointment } from '../../shared/types/appointment';
 import useNotifications from '../../shared/hooks/useNotifications';
 import { SkeletonList, SkeletonText, SkeletonButton } from '../../shared/components/skeleton';
+import AppointmentDetailsModal from './AppointmentDetailsModal';
 
 const PatientAppointmentsList: React.FC = () => {
   const { notifyError, notifySuccess } = useNotifications();
@@ -14,6 +15,8 @@ const PatientAppointmentsList: React.FC = () => {
   const [error, setError] = useState('');
   const [filter, setFilter] = useState('all'); // 'all', 'upcoming', 'past', 'confirmed', 'pending'
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchAppointments = async () => {
@@ -99,11 +102,17 @@ const PatientAppointmentsList: React.FC = () => {
       case 'past':
         result = result.filter(apt => new Date(apt.date) < new Date());
         break;
+      case 'approved':
+        result = result.filter(apt => apt.status === 'approved');
+        break;
       case 'confirmed':
         result = result.filter(apt => apt.status === 'confirmed');
         break;
       case 'pending':
         result = result.filter(apt => apt.status === 'pending');
+        break;
+      case 'rejected':
+        result = result.filter(apt => apt.status === 'rejected');
         break;
       default:
         // 'all' - no filtering
@@ -114,8 +123,10 @@ const PatientAppointmentsList: React.FC = () => {
   }, [filter, searchQuery, appointments]);
 
   const statusColors = {
+    approved: 'bg-green-100 text-green-800 border-green-200',
     confirmed: 'bg-green-100 text-green-800 border-green-200',
     pending: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+    rejected: 'bg-red-100 text-red-800 border-red-200',
     rescheduled: 'bg-blue-100 text-blue-800 border-blue-200',
     cancelled: 'bg-red-100 text-red-800 border-red-200',
   };
@@ -129,31 +140,71 @@ const PatientAppointmentsList: React.FC = () => {
         throw new Error('No authentication token found');
       }
 
-      await axios.put(
-        `${apiBaseUrl}/api/appointments/update-status/${appointmentId}`,
-        { status: 'cancelled' },
+      // Use the patient-specific cancellation endpoint
+      const response = await axios.put(
+        `${apiBaseUrl}/api/appointments/cancel/${appointmentId}`,
+        {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
       // Update the local state
-      const updatedAppointments = appointments.map(apt => 
+      const updatedAppointments = appointments.map(apt =>
         apt.id === appointmentId ? { ...apt, status: 'cancelled' as const } : apt
       );
-      
+
       setAppointments(updatedAppointments);
-      
+
       // Update filtered appointments
-      const updatedFiltered = filteredAppointments.map(apt => 
+      const updatedFiltered = filteredAppointments.map(apt =>
         apt.id === appointmentId ? { ...apt, status: 'cancelled' as const } : apt
       );
-      
+
       setFilteredAppointments(updatedFiltered);
-      
+
       notifySuccess('Success', 'Appointment cancelled successfully');
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error cancelling appointment:', err);
-      notifyError('Error', 'Failed to cancel appointment');
+
+      let errorMessage = 'Failed to cancel appointment';
+      if (err.response?.status === 404) {
+        errorMessage = 'Appointment not found or cannot be cancelled';
+      } else if (err.response?.status === 401) {
+        errorMessage = 'Session expired. Please log in again';
+        localStorage.removeItem('token');
+        window.location.href = '/login';
+        return;
+      } else if (err.response?.data?.error) {
+        errorMessage = err.response.data.error;
+      }
+
+      notifyError('Error', errorMessage);
     }
+  };
+
+  const handleViewDetails = (appointment: Appointment) => {
+    setSelectedAppointment(appointment);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedAppointment(null);
+  };
+
+  const isAppointmentExpired = (appointment: Appointment) => {
+    const now = new Date();
+    const appointmentDate = new Date(appointment.date);
+    const [hours, minutes] = appointment.time.split(':').map(Number);
+    appointmentDate.setHours(hours, minutes, 0, 0);
+
+    // Add 2-hour grace period (same as backend)
+    const gracePeriodEnd = new Date(appointmentDate.getTime() + (2 * 60 * 60 * 1000));
+
+    return now > gracePeriodEnd;
+  };
+
+  const canCancelAppointment = (appointment: Appointment) => {
+    return appointment.status === 'pending' && !isAppointmentExpired(appointment);
   };
 
   if (loading) {
@@ -234,8 +285,10 @@ const PatientAppointmentsList: React.FC = () => {
             <option value="all">All Appointments</option>
             <option value="upcoming">Upcoming</option>
             <option value="past">Past</option>
+            <option value="approved">Approved</option>
             <option value="confirmed">Confirmed</option>
             <option value="pending">Pending</option>
+            <option value="rejected">Rejected</option>
           </select>
         </div>
       </div>
@@ -278,19 +331,21 @@ const PatientAppointmentsList: React.FC = () => {
                 </div>
 
                 <div className="mt-4 flex flex-wrap gap-2">
-                  {appointment.status === 'pending' && (
-                    <>
-                      <button 
-                        className="px-3 py-1 bg-white border border-red-300 rounded-md text-sm text-red-700 hover:bg-red-50"
-                        onClick={() => handleCancelAppointment(appointment.id)}
-                      >
-                        Cancel
-                      </button>
-                    </>
-                  )}
-                  <button 
+                  {canCancelAppointment(appointment) ? (
+                    <button
+                      className="px-3 py-1 bg-white border border-red-300 rounded-md text-sm text-red-700 hover:bg-red-50"
+                      onClick={() => handleCancelAppointment(appointment.id)}
+                    >
+                      Cancel
+                    </button>
+                  ) : appointment.status === 'pending' && isAppointmentExpired(appointment) ? (
+                    <span className="px-3 py-1 bg-gray-100 border border-gray-200 rounded-md text-sm text-gray-500 cursor-not-allowed">
+                      Expired
+                    </span>
+                  ) : null}
+                  <button
                     className="px-3 py-1 bg-purple-50 border border-purple-200 rounded-md text-sm text-purple-700 hover:bg-purple-100"
-                    onClick={() => {/* Handle view details */}}
+                    onClick={() => handleViewDetails(appointment)}
                   >
                     View Details
                   </button>
@@ -315,6 +370,13 @@ const PatientAppointmentsList: React.FC = () => {
           </Link>
         </div>
       )}
+
+      {/* Appointment Details Modal */}
+      <AppointmentDetailsModal
+        appointment={selectedAppointment}
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+      />
     </div>
   );
 };

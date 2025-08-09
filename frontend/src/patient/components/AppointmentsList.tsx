@@ -27,17 +27,17 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({ appointments }) => 
         </Link>
       </div>
       
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden min-h-[200px] flex flex-col">
         {appointments.length > 0 ? (
           <div className="divide-y divide-gray-200">
-            {appointments.map((appointment) => (
-              <div key={appointment.id} className="p-4 hover:bg-gray-50 transition-colors duration-150">
+            {appointments.slice(0, 2).map((appointment) => (
+              <div key={appointment.id} className="p-3 hover:bg-gray-50 transition-colors duration-150">
                 <div className="flex justify-between items-start">
                   <div>
                     <h3 className="font-medium text-gray-900">Dr. {appointment.doctorName}</h3>
                     <p className="text-sm text-gray-500">{appointment.specialty}</p>
                   </div>
-                  <span 
+                  <span
                     className={`px-2 py-1 rounded-full text-xs font-medium border ${
                       statusColors[appointment.status as keyof typeof statusColors]
                     }`}
@@ -45,41 +45,36 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({ appointments }) => 
                     {appointment.status.charAt(0).toUpperCase() + appointment.status.slice(1)}
                   </span>
                 </div>
-                
-                <div className="mt-3 grid grid-cols-2 gap-2">
-                  <div className="flex items-center text-sm text-gray-600">
+
+                <div className="mt-2 flex items-center justify-between text-sm text-gray-600">
+                  <div className="flex items-center">
                     <Calendar className="h-4 w-4 mr-1 text-gray-400" />
                     {appointment.date}
                   </div>
-                  <div className="flex items-center text-sm text-gray-600">
+                  <div className="flex items-center">
                     <Clock className="h-4 w-4 mr-1 text-gray-400" />
                     {appointment.time}
                   </div>
-                  <div className="flex items-center text-sm text-gray-600 col-span-2">
-                    <MapPin className="h-4 w-4 mr-1 text-gray-400" />
-                    {appointment.location}
-                  </div>
-                </div>
-                
-                <div className="mt-3 flex space-x-2">
-                  {appointment.status === 'confirmed' && (
-                    <button className="px-3 py-1 bg-white border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50">
-                      Reschedule
-                    </button>
-                  )}
-                  <button className="px-3 py-1 bg-white border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50">
-                    Details
-                  </button>
                 </div>
               </div>
             ))}
+            {appointments.length > 2 && (
+              <div className="p-3 text-center bg-gray-50">
+                <Link
+                  to="/appointments"
+                  className="text-sm text-purple-600 hover:text-purple-800 font-medium"
+                >
+                  View {appointments.length - 2} more appointments
+                </Link>
+              </div>
+            )}
           </div>
         ) : (
-          <div className="p-6 text-center">
-            <p className="text-gray-500">No upcoming appointments</p>
-            <Link 
+          <div className="p-4 text-center flex-1 flex flex-col justify-center">
+            <p className="text-gray-500 mb-3">No upcoming appointments</p>
+            <Link
               to="/book-appointment"
-              className="mt-2 inline-block px-4 py-2 bg-purple-600 text-white rounded-md font-medium hover:bg-purple-700 transition-colors duration-150"
+              className="inline-block px-4 py-2 bg-purple-600 text-white rounded-md text-sm font-medium hover:bg-purple-700 transition-colors duration-150"
             >
               Book Appointment
             </Link>
