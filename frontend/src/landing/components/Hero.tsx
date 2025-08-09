@@ -2,7 +2,7 @@ import React, { useEffect, useRef, Suspense } from 'react';
 import { ArrowRight, Shield, Heart, Clock } from 'lucide-react';
 import { useInView } from 'react-intersection-observer';
 import gsap from 'gsap';
-import DNAHeroVisualization from './DNAHeroVisualization';
+import BrainHeroVisualization from './BrainHeroVisualization';
 import { Link } from 'react-router-dom';
 
 const Hero: React.FC = () => {
@@ -147,14 +147,14 @@ const Hero: React.FC = () => {
               <div className="absolute top-0 -left-4 w-72 h-72 bg-blue-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse-slow"></div>
               <div className="absolute top-0 -right-4 w-72 h-72 bg-blue-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse-slow"></div>
 
-              {/* 3D DNA Visualization - No Card, Just Floating */}
+              {/* 3D Brain Visualization - No Card, Just Floating */}
               <div className="relative w-full h-full">
                 <Suspense fallback={
                   <div className="w-full h-full flex items-center justify-center">
                     <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-500"></div>
                   </div>
                 }>
-                  <DNAHeroVisualization />
+                  <BrainHeroVisualization />
                 </Suspense>
               </div>
             </div>
