@@ -7,6 +7,8 @@ import {
   Calendar,
   FileText,
   Brain,
+  CreditCard,
+  UserCog,
   Settings,
   Shield,
   X,
@@ -25,6 +27,8 @@ const navigation = [
   { name: 'Appointments', href: '/admin/appointments', icon: Calendar },
   { name: 'Prescriptions', href: '/admin/prescriptions', icon: FileText },
   { name: 'AI Analytics', href: '/admin/analytics', icon: Brain },
+  { name: 'Subscription Analytics', href: '/admin/subscription-analytics', icon: CreditCard },
+  { name: 'Plan Management', href: '/admin/user-plan-management', icon: UserCog },
   { name: 'Settings', href: '/admin/settings', icon: Settings },
   { name: 'Security Logs', href: '/admin/security', icon: Shield },
 ];

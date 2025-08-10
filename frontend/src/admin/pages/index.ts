@@ -6,3 +6,5 @@ export * from './AdminPrescriptionLogs';
 export * from './AdminAIAnalytics';
 export * from './AdminSystemSettings';
 export * from './AdminSecurityLogs';
+export { default as AdminSubscriptionAnalytics } from './AdminSubscriptionAnalytics';
+export { default as AdminUserPlanManagement } from './AdminUserPlanManagement';

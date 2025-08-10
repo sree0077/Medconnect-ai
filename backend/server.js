@@ -7,6 +7,10 @@ const connectDB = require("./common/config/db");
 const authRoutes = require("./common/routes/authRoutes");
 const aiRoutes = require("./common/routes/aiRoutes");
 const notificationRoutes = require("./common/routes/notificationRoutes");
+const subscriptionRoutes = require("./common/routes/subscriptionRoutes");
+const usageRoutes = require("./common/routes/usageRoutes");
+const webhookRoutes = require("./common/routes/webhookRoutes");
+const adminPlanRoutes = require("./common/routes/adminPlanRoutes");
 
 // Admin routes
 const adminDashboardRoutes = require("./admin/routes/adminDashboardRoutes");
@@ -57,9 +61,13 @@ app.use((req, res, next) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/ai", aiRoutes);
 app.use("/api/notifications", notificationRoutes);
+app.use("/api/subscriptions", subscriptionRoutes);
+app.use("/api/usage", usageRoutes);
+app.use("/api/webhooks", webhookRoutes);
 
 // Mount admin routes
 app.use("/api/admin", adminDashboardRoutes);
+app.use("/api/admin", adminPlanRoutes);
 app.use("/api", adminUserRoutes);  // This handles /api/users/* routes for admin
 app.use("/api/appointments", adminAppointmentRoutes);
 app.use("/api/prescriptions", adminPrescriptionRoutes);

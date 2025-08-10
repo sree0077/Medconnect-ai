@@ -3,12 +3,13 @@ const axios = require("axios");
 const router = express.Router();
 const { authenticateToken } = require("../middleware/auth");
 const { logSymptomCheckerInteraction, logConsultationMessage } = require("../middleware/aiLoggingMiddleware");
+const { checkAIUsageLimit, trackAIUsage } = require("../middleware/usageTrackingMiddleware");
 
 // AI Service configuration
 const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://localhost:5001';
 
 // POST /api/ai/symptom
-router.post("/symptom", authenticateToken, async (req, res) => {
+router.post("/symptom", authenticateToken, checkAIUsageLimit, trackAIUsage('symptomCheckerMessage'), async (req, res) => {
   const startTime = Date.now(); // Track request start time for logging
 
   console.log("=== SYMPTOM ANALYSIS REQUEST ===");
@@ -188,7 +189,7 @@ IMPORTANT: This is for educational purposes only and should not replace professi
 });
 
 // POST /api/ai/chat - RAG-powered chat endpoint
-router.post("/chat", authenticateToken, async (req, res) => {
+router.post("/chat", authenticateToken, checkAIUsageLimit, trackAIUsage('aiConsultationMessage'), async (req, res) => {
   const startTime = Date.now(); // Track request start time for logging
 
   console.log("=== RAG CHAT REQUEST ===");

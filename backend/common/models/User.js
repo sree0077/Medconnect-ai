@@ -301,6 +301,147 @@ const userSchema = new mongoose.Schema({
       default: 0,
     },
   },
+
+  // Subscription and Usage Tracking
+  subscription: {
+    tier: {
+      type: String,
+      enum: ['free', 'pro', 'clinic'],
+      default: 'free',
+    },
+    status: {
+      type: String,
+      enum: ['active', 'inactive', 'cancelled', 'past_due', 'trialing'],
+      default: 'active',
+    },
+    startDate: {
+      type: Date,
+      default: Date.now,
+    },
+    endDate: {
+      type: Date,
+      default: null, // null for free tier, set for paid tiers
+    },
+    autoRenew: {
+      type: Boolean,
+      default: true,
+    },
+    paymentMethod: {
+      type: String,
+      default: '',
+    },
+    stripeCustomerId: {
+      type: String,
+      default: '',
+    },
+    stripeSubscriptionId: {
+      type: String,
+      default: '',
+    },
+    lastPaymentDate: {
+      type: Date,
+      default: null,
+    },
+    nextPaymentDate: {
+      type: Date,
+      default: null,
+    },
+    cancelledAt: {
+      type: Date,
+      default: null,
+    },
+    cancelReason: {
+      type: String,
+      default: '',
+    },
+    // Manual override fields for admin plan management
+    manualOverride: {
+      type: Boolean,
+      default: false,
+    },
+    lastModifiedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      default: null,
+    },
+    lastModifiedAt: {
+      type: Date,
+      default: null,
+    },
+    lastModificationReason: {
+      type: String,
+      default: '',
+    },
+  },
+
+  // Usage Limits and Tracking
+  usageLimits: {
+    // Free tier: 3 messages total for AI consultation + symptom checker combined
+    // Pro tier: unlimited
+    // Clinic tier: unlimited
+    monthlyAIMessages: {
+      type: Number,
+      default: 3, // Free tier limit
+    },
+    currentMonthUsage: {
+      aiMessages: {
+        type: Number,
+        default: 0,
+      },
+      lastResetDate: {
+        type: Date,
+        default: Date.now,
+      },
+    },
+    // Track daily usage for rate limiting
+    dailyUsage: {
+      aiMessages: {
+        type: Number,
+        default: 0,
+      },
+      lastResetDate: {
+        type: Date,
+        default: Date.now,
+      },
+    },
+  },
+
+  // Billing History
+  billingHistory: [{
+    invoiceId: {
+      type: String,
+      required: true,
+    },
+    amount: {
+      type: Number,
+      required: true,
+    },
+    currency: {
+      type: String,
+      default: 'USD',
+    },
+    status: {
+      type: String,
+      enum: ['paid', 'pending', 'failed', 'refunded'],
+      required: true,
+    },
+    paymentDate: {
+      type: Date,
+      required: true,
+    },
+    description: {
+      type: String,
+      required: true,
+    },
+    stripeInvoiceId: {
+      type: String,
+      default: '',
+    },
+    downloadUrl: {
+      type: String,
+      default: '',
+    },
+  }],
 }, { timestamps: true });
 
 // Indexes for efficient querying

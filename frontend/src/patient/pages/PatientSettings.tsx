@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Download, AlertTriangle } from 'lucide-react';
+import { Download, AlertTriangle, CreditCard } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { PatientLayout } from '../layouts/PatientLayout';
 import { PatientCard } from '../components/PatientCard';
 import { PatientButton } from '../components/PatientButton';
@@ -35,6 +36,7 @@ interface NotificationPreferences {
 
 const PatientSettings: React.FC = () => {
   const { notifySuccess, notifyError } = useNotifications();
+  const navigate = useNavigate();
 
   const [patient, setPatient] = useState<PatientProfile>({
     name: '',
@@ -946,6 +948,20 @@ const PatientSettings: React.FC = () => {
               <PatientCard title="Account Settings" className="mt-6">
                 <div className="space-y-4">
                   <div>
+                    <h4 className="text-sm font-medium text-gray-700 mb-2">Subscription & Billing</h4>
+                    <button
+                      onClick={() => navigate('/subscription-management')}
+                      className="flex items-center gap-2 text-sm text-purple-600 hover:text-purple-700"
+                    >
+                      <CreditCard size={16} />
+                      Manage Subscription
+                    </button>
+                    <p className="text-xs text-gray-500 mt-1">
+                      View your current plan, usage, and billing history
+                    </p>
+                  </div>
+
+                  <div className="border-t pt-4">
                     <h4 className="text-sm font-medium text-gray-700 mb-2">Data Management</h4>
                     <button
                       onClick={handleExportData}

@@ -442,6 +442,83 @@ export const aiHistoryService = {
   }
 };
 
+// Subscription Service API - for subscription management
+export const subscriptionService = {
+  // Get available subscription plans
+  async getPlans() {
+    const response = await api.get('/api/subscriptions/plans');
+    return response.data;
+  },
+
+  // Get current user's subscription
+  async getCurrentSubscription() {
+    const response = await api.get('/api/subscriptions/current');
+    return response.data;
+  },
+
+  // Update subscription (upgrade/downgrade)
+  async updateSubscription(tier: string, paymentMethodId?: string) {
+    const response = await api.post('/api/subscriptions/update', {
+      tier,
+      paymentMethodId,
+    });
+    return response.data;
+  },
+
+  // Cancel subscription
+  async cancelSubscription(reason?: string) {
+    const response = await api.post('/api/subscriptions/cancel', {
+      reason,
+    });
+    return response.data;
+  },
+
+  // Get subscription analytics (admin only)
+  async getAnalytics(period = 'monthly') {
+    const response = await api.get(`/api/subscriptions/analytics?period=${period}`);
+    return response.data;
+  },
+};
+
+// Usage Tracking Service API - for usage monitoring
+export const usageService = {
+  // Get current usage statistics
+  async getCurrentUsage() {
+    const response = await api.get('/api/usage/current');
+    return response.data;
+  },
+
+  // Get usage history
+  async getUsageHistory(period = 'monthly', limit = 12) {
+    const response = await api.get(`/api/usage/history?period=${period}&limit=${limit}`);
+    return response.data;
+  },
+
+  // Check if user can perform action
+  async checkActionLimit(action: string) {
+    const response = await api.get(`/api/usage/check/${action}`);
+    return response.data;
+  },
+
+  // Get usage summary for dashboard
+  async getUsageSummary() {
+    const response = await api.get('/api/usage/summary');
+    return response.data;
+  },
+
+  // Get usage analytics (admin only)
+  async getAnalytics(period = 'monthly', days = 30) {
+    const response = await api.get(`/api/usage/analytics?period=${period}&days=${days}`);
+    return response.data;
+  },
+
+  // Reset user usage (admin only)
+  async resetUserUsage(userId: string, period = 'monthly') {
+    const response = await api.post(`/api/usage/reset/${userId}`, { period });
+    return response.data;
+  },
+};
+
 // Admin AI Analytics Service API - for admin dashboard analytics
 export const adminAIAnalyticsService = {
   // Get system-wide AI usage overview
@@ -491,6 +568,47 @@ export const adminAIAnalyticsService = {
     const response = await api.get(`/api/admin/ai-analytics/system-trends?period=${period}`);
     return response.data;
   }
+};
+
+// Admin Plan Management Service
+export const adminPlanService = {
+  // Get all users with subscription information
+  getUsersWithSubscriptions: async (params?: { page?: number; limit?: number; search?: string; tier?: string }) => {
+    const response = await api.get('/api/admin/users-with-subscriptions', { params });
+    return response.data;
+  },
+
+  // Change a user's subscription plan
+  changeUserPlan: async (userId: string, newTier: string, reason: string) => {
+    const response = await api.post('/api/admin/change-user-plan', {
+      userId,
+      newTier,
+      reason
+    });
+    return response.data;
+  },
+
+  // Get plan change audit logs
+  getPlanChangeLogs: async (params?: { page?: number; limit?: number; userId?: string; type?: string }) => {
+    const response = await api.get('/api/admin/plan-change-logs', { params });
+    return response.data;
+  },
+
+  // Get subscription statistics
+  getSubscriptionStats: async () => {
+    const response = await api.get('/api/admin/subscription-stats');
+    return response.data;
+  },
+
+  // Bulk plan changes
+  bulkChangePlans: async (userIds: string[], newTier: string, reason: string) => {
+    const response = await api.post('/api/admin/bulk-change-plans', {
+      userIds,
+      newTier,
+      reason
+    });
+    return response.data;
+  },
 };
 
 export default api;

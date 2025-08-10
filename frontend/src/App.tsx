@@ -37,6 +37,8 @@ import {
   AdminAppointmentMonitoring,
   AdminPrescriptionLogs,
   AdminAIAnalytics,
+  AdminSubscriptionAnalytics,
+  AdminUserPlanManagement,
   AdminSystemSettings,
   AdminSecurityLogs
 } from './admin/pages';
@@ -48,7 +50,10 @@ import PatientAppointments from './patient/pages/PatientAppointments';
 import { PatientLayout } from './patient/layouts/PatientLayout';
 import ProfessionalPrescription from './patient/pages/ProfessionalPrescription';
 import PatientSettings from './patient/pages/PatientSettings';
+import SubscriptionManagement from './patient/pages/SubscriptionManagement';
 import AIConsultation from './patient/pages/AIConsultation';
+import CheckoutPage from './patient/pages/CheckoutPage';
+import CheckoutSuccessPage from './patient/pages/CheckoutSuccessPage';
 import ThemeDemo from './shared/components/ThemeDemo';
 
 // Placeholder dashboard components (you'll create these later)
@@ -242,6 +247,33 @@ function App() {
             }
           />
 
+          <Route
+            path="/subscription-management"
+            element={
+              <ProtectedRoute requiredRole="patient">
+                <SubscriptionManagement />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/checkout"
+            element={
+              <ProtectedRoute requiredRole="patient">
+                <CheckoutPage />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/checkout/success"
+            element={
+              <ProtectedRoute requiredRole="patient">
+                <CheckoutSuccessPage />
+              </ProtectedRoute>
+            }
+          />
+
           {/* Doctor Routes with New Layout */}
           <Route
             path="/doctor/dashboard"
@@ -386,7 +418,29 @@ function App() {
               </ProtectedRoute>
             }
           />
-          
+
+          <Route
+            path="/admin/subscription-analytics"
+            element={
+              <ProtectedRoute requiredRole="admin">
+                <AdminLayout>
+                  <AdminSubscriptionAnalytics />
+                </AdminLayout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/admin/user-plan-management"
+            element={
+              <ProtectedRoute requiredRole="admin">
+                <AdminLayout>
+                  <AdminUserPlanManagement />
+                </AdminLayout>
+              </ProtectedRoute>
+            }
+          />
+
           {/* Legacy admin dashboard for backward compatibility */}
           <Route
             path="/admin/old-dashboard"

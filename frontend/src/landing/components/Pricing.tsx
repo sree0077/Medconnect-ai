@@ -1,9 +1,12 @@
-import React, { useEffect, useRef } from 'react';
-import { Check, X } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { Check, X, Crown, Zap, Building } from 'lucide-react';
 import { useInView } from 'react-intersection-observer';
+import { useNavigate } from 'react-router-dom';
 import gsap from 'gsap';
+import { subscriptionService, usageService } from '../../shared/services/api';
 
 interface PricingPlanProps {
+  id: string;
   title: string;
   price: string;
   period: string;
@@ -12,9 +15,14 @@ interface PricingPlanProps {
   buttonText: string;
   highlighted?: boolean;
   index: number;
+  currentTier?: string;
+  isLoggedIn?: boolean;
+  onSelectPlan: (planId: string) => void;
+  loading?: boolean;
 }
 
 const PricingPlan: React.FC<PricingPlanProps> = ({
+  id,
   title,
   price,
   period,
@@ -22,7 +30,11 @@ const PricingPlan: React.FC<PricingPlanProps> = ({
   features,
   buttonText,
   highlighted = false,
-  index
+  index,
+  currentTier,
+  isLoggedIn,
+  onSelectPlan,
+  loading = false,
 }) => {
   const [ref, inView] = useInView({
     triggerOnce: true,
@@ -30,6 +42,9 @@ const PricingPlan: React.FC<PricingPlanProps> = ({
   });
 
   const cardRef = useRef<HTMLDivElement>(null);
+
+  const isCurrentPlan = currentTier === id;
+  const isPlanIcon = id === 'free' ? Crown : id === 'pro' ? Zap : Building;
 
   useEffect(() => {
     if (inView && cardRef.current) {
@@ -71,9 +86,19 @@ const PricingPlan: React.FC<PricingPlanProps> = ({
             </span>
           </div>
         )}
-        <h3 className={`text-xl font-bold mb-2 ${highlighted ? 'text-white' : 'text-gray-900 dark:text-text-primary'}`}>
-          {title}
-        </h3>
+        {isCurrentPlan && (
+          <div className="absolute -top-4 right-4">
+            <span className="bg-green-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
+              Current Plan
+            </span>
+          </div>
+        )}
+        <div className="flex items-center mb-2">
+          <isPlanIcon className={`w-6 h-6 mr-2 ${highlighted ? 'text-white' : 'text-purple-600'}`} />
+          <h3 className={`text-xl font-bold ${highlighted ? 'text-white' : 'text-gray-900 dark:text-text-primary'}`}>
+            {title}
+          </h3>
+        </div>
         <div className="mb-6">
           <span className="text-4xl font-bold">{price}</span>
           <span className={`text-sm ${highlighted ? 'text-white/80' : 'text-gray-500 dark:text-text-muted'}`}>
@@ -111,13 +136,17 @@ const PricingPlan: React.FC<PricingPlanProps> = ({
         </ul>
 
         <button
-          className={`w-full py-4 px-6 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 ${
-            highlighted
+          onClick={() => onSelectPlan(id)}
+          disabled={loading || isCurrentPlan}
+          className={`w-full py-4 px-6 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none ${
+            isCurrentPlan
+              ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
+              : highlighted
               ? 'bg-white text-purple-700 hover:bg-purple-50 shadow-lg hover:shadow-xl'
               : 'bg-gradient-to-r from-purple-600 to-purple-700 dark:from-primary-500 dark:to-primary-600 text-white hover:from-purple-700 hover:to-purple-800 dark:hover:from-primary-600 dark:hover:to-primary-700 shadow-lg hover:shadow-xl'
           }`}
         >
-          {buttonText}
+          {loading ? 'Processing...' : isCurrentPlan ? 'Current Plan' : buttonText}
         </button>
       </div>
     </div>
@@ -131,6 +160,41 @@ const Pricing: React.FC = () => {
   });
 
   const titleRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
+
+  // State management
+  const [loading, setLoading] = useState(false);
+  const [currentSubscription, setCurrentSubscription] = useState<any>(null);
+  const [usageSummary, setUsageSummary] = useState<any>(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Check if user is logged in and get subscription info
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    setIsLoggedIn(!!token);
+
+    if (token) {
+      loadSubscriptionData();
+    }
+
+    // Check for plan parameter in URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const planParam = urlParams.get('plan');
+    if (planParam && ['pro', 'clinic'].includes(planParam)) {
+      // Scroll to the specific plan or highlight it
+      setTimeout(() => {
+        const planElement = document.getElementById(`plan-${planParam}`);
+        if (planElement) {
+          planElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          planElement.classList.add('ring-2', 'ring-purple-500', 'ring-opacity-50');
+          setTimeout(() => {
+            planElement.classList.remove('ring-2', 'ring-purple-500', 'ring-opacity-50');
+          }, 3000);
+        }
+      }, 500);
+    }
+  }, []);
 
   useEffect(() => {
     if (sectionInView && titleRef.current) {
@@ -142,8 +206,62 @@ const Pricing: React.FC = () => {
     }
   }, [sectionInView]);
 
+  const loadSubscriptionData = async () => {
+    try {
+      const [subscriptionData, usageData] = await Promise.all([
+        subscriptionService.getCurrentSubscription(),
+        usageService.getUsageSummary(),
+      ]);
+
+      setCurrentSubscription(subscriptionData);
+      setUsageSummary(usageData);
+    } catch (error) {
+      console.error('Error loading subscription data:', error);
+      // Don't show error for subscription data, just continue
+    }
+  };
+
+  const handleSelectPlan = async (planId: string) => {
+    if (!isLoggedIn) {
+      // Redirect to login with return URL
+      navigate('/login?returnTo=/pricing');
+      return;
+    }
+
+    if (planId === currentSubscription?.subscription?.tier) {
+      return; // Already on this plan
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      if (planId === 'free') {
+        // Handle downgrade to free
+        await subscriptionService.cancelSubscription('Downgrade to free plan');
+      } else {
+        // Handle upgrade to paid plan
+        await subscriptionService.updateSubscription(planId);
+      }
+
+      // Reload subscription data
+      await loadSubscriptionData();
+
+      // Show success message or redirect
+      if (planId !== 'free') {
+        navigate('/dashboard?upgraded=true');
+      }
+    } catch (error: any) {
+      console.error('Error updating subscription:', error);
+      setError(error.response?.data?.message || 'Failed to update subscription');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const pricingPlans = [
     {
+      id: "free",
       title: "Free",
       price: "$0",
       period: "/mo",
@@ -151,30 +269,34 @@ const Pricing: React.FC = () => {
       buttonText: "Start Free",
       features: [
         { text: "Basic symptom checker", included: true },
-        { text: "Limited consultations (3/mo)", included: true },
+        { text: "Limited AI consultations (3/mo)", included: true },
         { text: "Health records storage", included: true },
+        { text: "1 appointment per month", included: true },
         { text: "Digital prescriptions", included: false },
         { text: "Priority support", included: false },
         { text: "Family accounts", included: false }
       ]
     },
     {
+      id: "pro",
       title: "Pro",
       price: "$19",
       period: "/mo",
       description: "Advanced features for individuals and families seeking comprehensive care",
-      buttonText: "Get Started",
+      buttonText: "Upgrade to Pro",
       highlighted: true,
       features: [
         { text: "Advanced symptom checker", included: true },
-        { text: "Unlimited consultations", included: true },
+        { text: "Unlimited AI consultations", included: true },
         { text: "Health records storage", included: true },
+        { text: "Up to 10 appointments per month", included: true },
         { text: "Digital prescriptions", included: true },
         { text: "Priority support", included: true },
         { text: "Family accounts (up to 4)", included: true }
       ]
     },
     {
+      id: "clinic",
       title: "Clinic",
       price: "$99",
       period: "/mo",
@@ -182,8 +304,9 @@ const Pricing: React.FC = () => {
       buttonText: "Contact Sales",
       features: [
         { text: "Provider dashboard", included: true },
-        { text: "Patient management", included: true },
+        { text: "Unlimited patient management", included: true },
         { text: "Electronic health records", included: true },
+        { text: "Unlimited appointments", included: true },
         { text: "Prescription management", included: true },
         { text: "Analytics & reporting", included: true },
         { text: "API access", included: true }
@@ -206,21 +329,64 @@ const Pricing: React.FC = () => {
           <p className="text-lg text-gray-600 dark:text-text-secondary max-w-2xl mx-auto">
             Choose the plan that fits your needs. No hidden fees or surprise charges.
           </p>
+
+          {/* Usage Summary for logged-in users */}
+          {isLoggedIn && usageSummary && (
+            <div className="mt-8 max-w-md mx-auto bg-white dark:bg-surface rounded-xl p-6 shadow-lg border border-purple-200 dark:border-border">
+              <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-text-primary">Your Current Usage</h3>
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600 dark:text-text-secondary">AI Messages</span>
+                  <span className="text-sm font-medium">
+                    {usageSummary.hasUnlimitedUsage ? 'Unlimited' :
+                      `${usageSummary.currentUsage.aiMessages}/${usageSummary.limits.aiMessages}`}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600 dark:text-text-secondary">Appointments</span>
+                  <span className="text-sm font-medium">
+                    {usageSummary.hasUnlimitedUsage ? 'Unlimited' :
+                      `${usageSummary.currentUsage.appointments}/${usageSummary.limits.appointmentsPerMonth}`}
+                  </span>
+                </div>
+                {usageSummary.needsUpgrade && (
+                  <div className="mt-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-200 dark:border-yellow-800">
+                    <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                      You've reached your usage limits. Consider upgrading for unlimited access!
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Error Message */}
+          {error && (
+            <div className="mt-4 max-w-md mx-auto p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
+              <p className="text-sm text-red-800 dark:text-red-200">{error}</p>
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
           {pricingPlans.map((plan, index) => (
-            <PricingPlan
-              key={index}
-              title={plan.title}
-              price={plan.price}
-              period={plan.period}
-              description={plan.description}
-              features={plan.features}
-              buttonText={plan.buttonText}
-              highlighted={plan.highlighted}
-              index={index}
-            />
+            <div key={plan.id} id={`plan-${plan.id}`}>
+              <PricingPlan
+                id={plan.id}
+                title={plan.title}
+                price={plan.price}
+                period={plan.period}
+                description={plan.description}
+                features={plan.features}
+                buttonText={plan.buttonText}
+                highlighted={plan.highlighted}
+                index={index}
+                currentTier={currentSubscription?.subscription?.tier}
+                isLoggedIn={isLoggedIn}
+                onSelectPlan={handleSelectPlan}
+                loading={loading}
+              />
+            </div>
           ))}
         </div>
       </div>

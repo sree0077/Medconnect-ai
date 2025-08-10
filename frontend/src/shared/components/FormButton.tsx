@@ -20,20 +20,21 @@ const FormButton: React.FC<FormButtonProps> = ({
   disabled = false,
 }) => {
   const baseClasses = "py-3 px-6 rounded-xl font-medium transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2";
-  
+
   const variantClasses = {
     primary: "bg-primary text-white hover:bg-primary/90 shadow-md hover:shadow-lg focus:ring-primary/50 dark:bg-primary-500 dark:hover:bg-primary-600",
     secondary: "bg-secondary text-white hover:bg-secondary/90 shadow-md hover:shadow-lg focus:ring-secondary/50 dark:bg-secondary-500 dark:hover:bg-secondary-600",
     outline: "bg-transparent text-primary border border-primary hover:bg-primary/5 focus:ring-primary/30 dark:text-primary-400 dark:border-primary-400 dark:hover:bg-primary-900/20",
   };
-  
+
   const widthClasses = fullWidth ? "w-full" : "";
   const disabledClasses = disabled ? "opacity-70 cursor-not-allowed" : "";
-  
+  const submitClasses = type === 'submit' ? "submit-btn" : "";
+
   return (
     <button
       type={type}
-      className={`${baseClasses} ${variantClasses[variant]} ${widthClasses} ${disabledClasses}`}
+      className={`${baseClasses} ${variantClasses[variant]} ${widthClasses} ${disabledClasses} ${submitClasses}`}
       onClick={onClick}
       disabled={disabled || isLoading}
     >

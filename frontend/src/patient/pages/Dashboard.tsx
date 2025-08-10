@@ -8,6 +8,7 @@ import AppointmentsList from '../components/AppointmentsList';
 import PrescriptionsList from '../components/PrescriptionsList';
 import AIInsightsPanel from '../components/AIInsightsPanel';
 import HealthMonitoring from '../components/HealthMonitoring';
+import UsageWidget from '../components/UsageWidget';
 import { Appointment } from '../../shared/types/appointment';
 import { Prescription } from '../../shared/types/prescription';
 import { useSessionValidation } from '../../shared/hooks/useSessionValidation';
@@ -298,7 +299,15 @@ const Dashboard: React.FC = () => {
         </div>
 
         <QuickActions />
-        <HealthMonitoring />
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2">
+            <HealthMonitoring />
+          </div>
+          <div>
+            <UsageWidget />
+          </div>
+        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div>

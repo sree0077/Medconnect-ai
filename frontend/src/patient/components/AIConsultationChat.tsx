@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Send, Bot, User, Loader2, AlertCircle, RefreshCw } from 'lucide-react';
 import { aiService } from '../../shared/services/api';
+import { useActionLimitCheck } from '../../shared/hooks/useUsageTracking';
+import UsageLimitModal from './UsageLimitModal';
 
 interface Message {
   id: string;
@@ -22,9 +24,12 @@ const AIConsultationChat: React.FC<AIConsultationChatProps> = ({ className = '' 
   const [isTyping, setIsTyping] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [conversationId] = useState(() => `conv_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`);
-  
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Usage tracking
+  const { showLimitModal, limitModalData, checkAndExecuteAction, closeLimitModal } = useActionLimitCheck();
 
   // Welcome message
   useEffect(() => {
@@ -50,65 +55,62 @@ const AIConsultationChat: React.FC<AIConsultationChatProps> = ({ className = '' 
   const handleSendMessage = async () => {
     if (!inputText.trim() || isLoading) return;
 
-    const userMessage: Message = {
-      id: `user_${Date.now()}`,
-      text: inputText.trim(),
-      isBot: false,
-      timestamp: new Date()
-    };
-
-    setMessages(prev => [...prev, userMessage]);
-    setInputText('');
-    setIsLoading(true);
-    setIsTyping(true);
-    setError(null);
-
-    try {
-      // Prepare conversation history (last 10 messages for context)
-      const conversationHistory = messages.slice(-10).map(msg => ({
-        question: msg.isBot ? '' : msg.text,
-        response: msg.isBot ? msg.text : ''
-      })).filter(item => item.question || item.response);
-
-      const response = await aiService.chat(
-        userMessage.text,
-        conversationHistory,
-        conversationId
-      );
-
-      // Simulate typing delay for better UX
-      setTimeout(() => {
-        const botMessage: Message = {
-          id: `bot_${Date.now()}`,
-          text: response.response,
-          isBot: true,
-          timestamp: new Date(),
-          sources: response.sources_used
-        };
-
-        setMessages(prev => [...prev, botMessage]);
-        setIsTyping(false);
-      }, 1000);
-
-    } catch (err: any) {
-      console.error('Chat error:', err);
-      setIsTyping(false);
-      
-      const errorMessage = err?.response?.data?.error || err?.message || 'Failed to get response. Please try again.';
-      setError(errorMessage);
-
-      // Add error message to chat
-      const errorBotMessage: Message = {
-        id: `error_${Date.now()}`,
-        text: "I apologize, but I'm having trouble processing your request right now. Please try again in a moment, or rephrase your question.",
-        isBot: true,
+    // Check usage limits before sending message
+    await checkAndExecuteAction('aiMessage', async () => {
+      const userMessage: Message = {
+        id: `user_${Date.now()}`,
+        text: inputText.trim(),
+        isBot: false,
         timestamp: new Date()
       };
 
-      setMessages(prev => [...prev, errorBotMessage]);
-    } finally {
-      setIsLoading(false);
-    }
+      setMessages(prev => [...prev, userMessage]);
+      setInputText('');
+      setIsLoading(true);
+      setIsTyping(true);
+      setError(null);
+
+      try {
+        // Prepare conversation history (last 10 messages for context)
+        const conversationHistory = messages.slice(-10).map(msg => ({
+          question: msg.isBot ? '' : msg.text,
+          response: msg.isBot ? msg.text : ''
+        })).filter(item => item.question || item.response);
+
+        const response = await aiService.chat(
+          userMessage.text,
+          conversationHistory,
+          conversationId
+        );
+
+        // Simulate typing delay for better UX
+        setTimeout(() => {
+          const botMessage: Message = {
+            id: `bot_${Date.now()}`,
+            text: response.response,
+            isBot: true,
+            timestamp: new Date(),
+            sources: response.sources_used
+          };
+
+          setMessages(prev => [...prev, botMessage]);
+          setIsTyping(false);
+        }, 1000);
+
+      } catch (err: any) {
+        console.error('Chat error:', err);
+        setIsTyping(false);
+
+        // Handle specific error cases
+        if (err.response?.status === 429) {
+          setError('Usage limit exceeded. Please upgrade to continue using AI consultation.');
+        } else {
+          setError(err.response?.data?.message || 'Failed to send message. Please try again.');
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    });
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -270,6 +272,16 @@ const AIConsultationChat: React.FC<AIConsultationChatProps> = ({ className = '' 
           ⚠️ This AI assistant provides educational information only. Always consult healthcare professionals for medical advice.
         </p>
       </div>
+
+      {/* Usage Limit Modal */}
+      {showLimitModal && limitModalData && (
+        <UsageLimitModal
+          isOpen={showLimitModal}
+          onClose={closeLimitModal}
+          limitType={limitModalData.limitType}
+          currentUsage={limitModalData.currentUsage}
+        />
+      )}
     </div>
   );
 };

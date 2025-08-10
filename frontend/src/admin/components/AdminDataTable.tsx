@@ -3,8 +3,10 @@ import { ChevronLeft, ChevronRight, Search, Filter } from 'lucide-react';
 
 interface Column {
   key: string;
-  header: string;
+  label?: string;
+  header?: string;
   sortable?: boolean;
+  render?: (row: any) => React.ReactNode;
 }
 
 interface AdminDataTableProps {
@@ -14,6 +16,8 @@ interface AdminDataTableProps {
   searchable?: boolean;
   filterable?: boolean;
   pagination?: boolean;
+  loading?: boolean;
+  emptyMessage?: string;
 }
 
 export const AdminDataTable: React.FC<AdminDataTableProps> = ({
@@ -22,7 +26,9 @@ export const AdminDataTable: React.FC<AdminDataTableProps> = ({
   actions,
   searchable = true,
   filterable = false,
-  pagination = true
+  pagination = true,
+  loading = false,
+  emptyMessage = "No data available"
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
@@ -106,7 +112,7 @@ export const AdminDataTable: React.FC<AdminDataTableProps> = ({
                   className="px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider"
                 >
                   <div className="flex items-center">
-                    {column.header}
+                    {column.label || column.header}
                     {column.sortable && (
                       <button
                         onClick={() => handleSort(column.key)}
@@ -132,12 +138,24 @@ export const AdminDataTable: React.FC<AdminDataTableProps> = ({
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
-            {paginatedData.length > 0 ? (
+            {loading ? (
+              <tr>
+                <td
+                  colSpan={columns.length + (actions ? 1 : 0)}
+                  className="px-6 py-4 text-center text-sm text-gray-500"
+                >
+                  <div className="flex items-center justify-center">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-600"></div>
+                    <span className="ml-2">Loading...</span>
+                  </div>
+                </td>
+              </tr>
+            ) : paginatedData.length > 0 ? (
               paginatedData.map((row, rowIndex) => (
                 <tr key={rowIndex} className="hover:bg-gray-50">
                   {columns.map((column) => (
                     <td key={column.key} className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
-                      {row[column.key]}
+                      {column.render ? column.render(row) : row[column.key]}
                     </td>
                   ))}
                   {actions && (
@@ -153,7 +171,7 @@ export const AdminDataTable: React.FC<AdminDataTableProps> = ({
                   colSpan={columns.length + (actions ? 1 : 0)}
                   className="px-6 py-4 text-center text-sm text-gray-500"
                 >
-                  No data available
+                  {emptyMessage}
                 </td>
               </tr>
             )}
