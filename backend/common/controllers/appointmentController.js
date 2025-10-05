@@ -3,6 +3,7 @@ const User = require("../models/User");
 const { createAppointmentNotification, createNotification } = require('./notificationController');
 
 const bookAppointment = async (req, res) => {
+  
   const { doctorId, date, time, type = 'consultation' } = req.body;
   const patientId = req.user._id; // Using _id from authenticated user
 
@@ -217,4 +218,5 @@ module.exports = {
   getDoctorAppointments,
   updateAppointmentStatus,
   getAllAppointments
+
 };
